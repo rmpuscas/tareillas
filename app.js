@@ -448,43 +448,79 @@ function renderStats(data) {
   noStats.classList.add("hidden");
   statsList.classList.remove("hidden");
 
-  // Find the max time across all categories for bar scaling
-  let maxTime = 0;
-  for (const member of data) {
-    for (const cat of member.categories) {
-      if (cat.time_spent > maxTime) maxTime = cat.time_spent;
-    }
-  }
-  if (maxTime === 0) maxTime = 1;
+  // --- Member totals section ---
+  const membersSection = document.createElement("div");
+  membersSection.className = "stats-section";
+  membersSection.innerHTML = '<h3 class="stats-section-title">Miembros</h3>';
+
+  const membersGrid = document.createElement("div");
+  membersGrid.className = "stats-members-grid";
 
   for (const member of data) {
     const card = document.createElement("div");
-    card.className = "stats-member-card";
+    card.className = "stats-summary-card";
+    card.innerHTML = `
+      <span class="stats-summary-name">${member.name}</span>
+      <span class="stats-summary-time">${formatMinutes(member.total_time_spent)}</span>
+    `;
+    membersGrid.appendChild(card);
+  }
+  membersSection.appendChild(membersGrid);
+  statsList.appendChild(membersSection);
 
-    let barsHtml = "";
-    member.categories.forEach((cat, i) => {
-      const pct = Math.round((cat.time_spent / maxTime) * 100);
+  // --- Build category map ensuring all members appear ---
+  const allMembers = data.map((m) => m.name);
+  const categoryMap = new Map();
+  for (const member of data) {
+    for (const cat of member.categories) {
+      if (!categoryMap.has(cat.category_name)) {
+        categoryMap.set(cat.category_name, new Map());
+      }
+      categoryMap.get(cat.category_name).set(member.name, cat.time_spent);
+    }
+  }
+
+  // --- Category cards ---
+  const catsSection = document.createElement("div");
+  catsSection.className = "stats-section";
+  catsSection.innerHTML = '<h3 class="stats-section-title">Por categoría</h3>';
+
+  const catsGrid = document.createElement("div");
+  catsGrid.className = "stats-cats-grid";
+
+  for (const [catName, memberMap] of categoryMap) {
+    const entries = allMembers.map((name) => ({
+      name,
+      time_spent: memberMap.get(name) || 0,
+    }));
+    const maxTime = Math.max(...entries.map((m) => m.time_spent), 1);
+    const card = document.createElement("div");
+    card.className = "stats-cat-card";
+
+    let rowsHtml = "";
+    entries.forEach((m, i) => {
+      const pct = Math.round((m.time_spent / maxTime) * 100);
       const color = BAR_COLORS[i % BAR_COLORS.length];
-      barsHtml += `
+      rowsHtml += `
         <div class="stats-category-row">
-          <span class="stats-cat-name">${cat.category_name}</span>
+          <span class="stats-cat-name">${m.name}</span>
           <div class="stats-bar-track">
             <div class="stats-bar-fill" style="width:${pct}%;background:${color};"></div>
           </div>
-          <span class="stats-cat-time">${formatMinutes(cat.time_spent)}</span>
+          <span class="stats-cat-time">${formatMinutes(m.time_spent)}</span>
         </div>
       `;
     });
 
     card.innerHTML = `
-      <div class="stats-member-header">
-        <span class="stats-member-name">${member.name}</span>
-        <span class="stats-member-total">${formatMinutes(member.total_time_spent)}</span>
-      </div>
-      ${barsHtml}
+      <div class="stats-cat-card-title">${catName}</div>
+      ${rowsHtml}
     `;
-    statsList.appendChild(card);
+    catsGrid.appendChild(card);
   }
+
+  catsSection.appendChild(catsGrid);
+  statsList.appendChild(catsSection);
 }
 
 async function loadStats(startDate, endDate) {
