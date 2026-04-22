@@ -1,4 +1,5 @@
 const API_BASE = "https://task-api-v79e.onrender.com/api";
+//const API_BASE = "http://localhost:3000/api";
 
 // ---- DOM refs ----
 const loginPage = document.getElementById("login-page");
@@ -11,6 +12,10 @@ const tasksLoading = document.getElementById("tasks-loading");
 const tasksError = document.getElementById("tasks-error");
 const tasksList = document.getElementById("tasks-list");
 const noTasks = document.getElementById("no-tasks");
+const pagination = document.getElementById("pagination");
+const prevPageBtn = document.getElementById("prev-page");
+const nextPageBtn = document.getElementById("next-page");
+const pageInfo = document.getElementById("page-info");
 
 const addTaskBtn = document.getElementById("add-task-btn");
 const modalOverlay = document.getElementById("modal-overlay");
@@ -47,6 +52,8 @@ let token = sessionStorage.getItem("jwt");
 let membersCache = null;
 let categoriesCache = null;
 let currentPage = "tasks";
+let tasksCurrentPage = 1;
+let tasksTotalPages = 1;
 
 // Bar colors for categories
 const BAR_COLORS = ["#4361ee", "#2ec4b6", "#ff6b6b", "#feca57", "#7b61ff", "#ff9f43", "#54a0ff", "#5f27cd"];
@@ -83,8 +90,8 @@ async function login(password) {
 }
 
 // ---- Tasks ----
-async function fetchTasks() {
-  const res = await fetch(`${API_BASE}/tasks`, {
+async function fetchTasks(page = 1) {
+  const res = await fetch(`${API_BASE}/tasks?page=${page}&limit=10`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -108,6 +115,7 @@ function renderTasks(tasks, members, categories) {
   if (tasks.length === 0) {
     tasksList.classList.add("hidden");
     noTasks.classList.remove("hidden");
+    pagination.classList.add("hidden");
     return;
   }
 
@@ -141,13 +149,23 @@ function renderTasks(tasks, members, categories) {
       if (!confirm("¿Eliminar esta tarea?")) return;
       try {
         await deleteTask(btn.dataset.id);
-        loadTasks();
+        loadTasks(tasksCurrentPage);
       } catch (err) {
         tasksError.textContent = err.message;
         tasksError.classList.remove("hidden");
       }
     });
   });
+
+  // Pagination controls
+  if (tasksTotalPages > 1) {
+    pagination.classList.remove("hidden");
+    pageInfo.textContent = `${tasksCurrentPage} / ${tasksTotalPages}`;
+    prevPageBtn.disabled = tasksCurrentPage <= 1;
+    nextPageBtn.disabled = tasksCurrentPage >= tasksTotalPages;
+  } else {
+    pagination.classList.add("hidden");
+  }
 }
 
 function lookupName(list, id) {
@@ -155,19 +173,22 @@ function lookupName(list, id) {
   return item?.name || `#${id}`;
 }
 
-async function loadTasks() {
+async function loadTasks(page = 1) {
   tasksLoading.classList.remove("hidden");
   tasksList.classList.add("hidden");
   noTasks.classList.add("hidden");
   tasksError.classList.add("hidden");
+  pagination.classList.add("hidden");
 
   try {
-    const [tasks, members, categories] = await Promise.all([
-      fetchTasks(),
+    const [result, members, categories] = await Promise.all([
+      fetchTasks(page),
       fetchMembers(),
       fetchCategories(),
     ]);
-    renderTasks(tasks, members, categories);
+    tasksCurrentPage = result.page;
+    tasksTotalPages = result.total_pages;
+    renderTasks(result.data, members, categories);
   } catch (err) {
     tasksError.textContent = err.message;
     tasksError.classList.remove("hidden");
@@ -592,6 +613,13 @@ addTaskBtn.addEventListener("click", openModal);
 modalCancelBtn.addEventListener("click", closeModal);
 modalOverlay.addEventListener("click", (e) => {
   if (e.target === modalOverlay) closeModal();
+});
+
+prevPageBtn.addEventListener("click", () => {
+  if (tasksCurrentPage > 1) loadTasks(tasksCurrentPage - 1);
+});
+nextPageBtn.addEventListener("click", () => {
+  if (tasksCurrentPage < tasksTotalPages) loadTasks(tasksCurrentPage + 1);
 });
 
 taskForm.addEventListener("submit", async (e) => {

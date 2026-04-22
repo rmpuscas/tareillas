@@ -194,6 +194,33 @@ header h1 {
   color: #888;
 }
 
+/* ---------- Pagination ---------- */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 0.5rem 0;
+}
+
+.pagination button {
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem;
+  min-height: 40px;
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+#page-info {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #555;
+}
+
 /* ---------- Modal (bottom-sheet on mobile) ---------- */
 .modal-overlay {
   position: fixed;
