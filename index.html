@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task Manager</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Login Page -->
+  <div id="login-page" class="page">
+    <div class="card">
+      <h1>🔒 Login</h1>
+      <form id="login-form">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" required />
+        <button type="submit">Login</button>
+      </form>
+      <p id="login-error" class="error hidden"></p>
+    </div>
+  </div>
+
+  <!-- Tasks Page -->
+  <div id="tasks-page" class="page hidden">
+    <div class="container">
+      <header>
+        <h1>📋 My Tasks</h1>
+        <button id="logout-btn">Logout</button>
+      </header>
+      <div id="tasks-loading" class="loading hidden">Loading tasks…</div>
+      <p id="tasks-error" class="error hidden"></p>
+      <table id="tasks-table" class="hidden">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th>Time Spent</th>
+          </tr>
+        </thead>
+        <tbody id="tasks-body"></tbody>
+      </table>
+      <p id="no-tasks" class="hidden">No tasks found.</p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
