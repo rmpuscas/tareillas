@@ -417,6 +417,8 @@ function getDateRange(range) {
       end = new Date(today.getFullYear() - 1, 11, 31);
       break;
     }
+    case "always":
+      return { start_date: null, end_date: null };
   }
   return { start_date: fmt(start), end_date: fmt(end) };
 }
@@ -442,7 +444,10 @@ function monthInputToRange(val) {
 
 // ---- Statistics ----
 async function fetchStats(startDate, endDate) {
-  const url = `${API_BASE}/statistics?start_date=${startDate}&end_date=${endDate}`;
+  let url = `${API_BASE}/statistics`;
+  if (startDate && endDate) {
+    url += `?start_date=${startDate}&end_date=${endDate}`;
+  }
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   });
