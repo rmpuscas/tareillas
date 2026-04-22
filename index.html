@@ -24,26 +24,116 @@
   <div id="tasks-page" class="page hidden">
     <div class="container">
       <header>
-        <h1>📋 My Tasks</h1>
-        <button id="logout-btn">Logout</button>
+        <h1>📋 Tareillas</h1>
+        <div class="header-actions">
+          <button id="add-task-btn">Nueva tarea</button>
+          <button id="categories-btn">Categorías</button>
+        </div>
       </header>
+
+      <!-- Add Task Modal -->
+      <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal">
+          <h2>Nueva tarea</h2>
+          <form id="task-form">
+            <label for="task-member">Miembro</label>
+            <select id="task-member" required></select>
+
+            <label for="task-category">Categoría</label>
+            <select id="task-category" required></select>
+
+            <label for="task-date">Fecha</label>
+            <input type="date" id="task-date" required />
+
+            <label for="task-time">Tiempo dedicado (minutos)</label>
+            <input type="number" id="task-time" min="1" placeholder="e.g. 45" required />
+
+            <label for="task-desc">Descripción</label>
+            <textarea id="task-desc" rows="3" placeholder="¿Qué hiciste?"></textarea>
+
+            <p id="task-form-error" class="error hidden"></p>
+            <div class="modal-actions">
+              <button type="button" id="modal-cancel-btn" class="btn-secondary">Cancel</button>
+              <button type="submit" class="btn-primary">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Categories Modal -->
+      <div id="cat-modal-overlay" class="modal-overlay hidden">
+        <div class="modal">
+          <h2>Categorías</h2>
+          <div id="cat-list" class="cat-list"></div>
+          <p id="cat-list-error" class="error hidden"></p>
+          <form id="cat-form" class="cat-add-form">
+            <input type="text" id="cat-name" placeholder="Nueva categoría…" required />
+            <button type="submit" class="btn-primary">Add</button>
+          </form>
+          <p id="cat-form-error" class="error hidden"></p>
+          <div class="modal-actions" style="margin-top:1rem;">
+            <button type="button" id="cat-modal-close-btn" class="btn-secondary" style="flex:1;">Close</button>
+          </div>
+        </div>
+      </div>
       <div id="tasks-loading" class="loading hidden">Loading tasks…</div>
       <p id="tasks-error" class="error hidden"></p>
-      <table id="tasks-table" class="hidden">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Date</th>
-            <th>Description</th>
-            <th>Category</th>
-            <th>Time Spent</th>
-          </tr>
-        </thead>
-        <tbody id="tasks-body"></tbody>
-      </table>
+      <div id="tasks-list" class="tasks-list"></div>
       <p id="no-tasks" class="hidden">No tasks found.</p>
     </div>
   </div>
+
+  <!-- Statistics Page -->
+  <div id="stats-page" class="page hidden">
+    <div class="container">
+      <header>
+        <h1>📊 Estadísticas</h1>
+      </header>
+
+      <!-- Quick filters -->
+      <div class="stats-filters">
+        <button class="filter-chip active" data-range="current-week">Esta semana</button>
+        <button class="filter-chip" data-range="last-week">Semana pasada</button>
+        <button class="filter-chip" data-range="current-month">Este mes</button>
+        <button class="filter-chip" data-range="last-month">Mes pasado</button>
+        <button class="filter-chip" data-range="current-year">Este año</button>
+        <button class="filter-chip" data-range="last-year">Año pasado</button>
+      </div>
+
+      <!-- Custom date pickers -->
+      <div class="stats-custom-dates">
+        <div class="date-picker-group">
+          <label for="stats-week">Semana</label>
+          <input type="week" id="stats-week" />
+        </div>
+        <div class="date-picker-group">
+          <label for="stats-month">Mes</label>
+          <input type="month" id="stats-month" />
+        </div>
+        <div class="date-picker-group">
+          <label for="stats-year">Año</label>
+          <input type="number" id="stats-year" min="2020" max="2099" placeholder="e.g. 2026" />
+        </div>
+      </div>
+
+      <div id="stats-loading" class="loading hidden">Cargando estadísticas…</div>
+      <p id="stats-error" class="error hidden"></p>
+      <div id="stats-list" class="stats-list"></div>
+      <p id="no-stats" class="hidden">No hay datos para este periodo.</p>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button class="bottom-nav-item active" data-page="tasks">
+      <span class="bottom-nav-icon">📋</span>
+      <span class="bottom-nav-label">Tareas</span>
+    </button>
+    <button class="bottom-nav-item" data-page="stats">
+      <span class="bottom-nav-icon">📊</span>
+      <span class="bottom-nav-label">Estadísticas</span>
+    </button>
+  </nav>
 
   <script src="app.js"></script>
 </body>
