@@ -45,6 +45,7 @@ const filterChips = document.querySelectorAll(".filter-chip");
 const statsWeek = document.getElementById("stats-week");
 const statsMonth = document.getElementById("stats-month");
 const statsYear = document.getElementById("stats-year");
+const bottomNav = document.querySelector(".bottom-nav");
 const bottomNavItems = document.querySelectorAll(".bottom-nav-item");
 
 // ---- State ----
@@ -64,6 +65,7 @@ function showPage(page) {
   tasksPage.classList.add("hidden");
   statsPage.classList.add("hidden");
   page.classList.remove("hidden");
+  bottomNav.classList.toggle("hidden", page === loginPage);
 }
 
 function formatMinutes(mins) {
