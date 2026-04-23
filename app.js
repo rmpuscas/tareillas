@@ -130,17 +130,17 @@ function renderTasks(tasks, members, categories) {
     const card = document.createElement("div");
     card.className = "task-card";
     card.innerHTML = `
-      <div class="task-card-header">
-        <span class="task-card-date">${task.date}</span>
-        <div class="task-card-top-right">
-          <span class="task-card-time">${formatMinutes(task.time_spent)}</span>
-          <button class="btn-delete-task" data-id="${task.id}" title="Delete">✕</button>
+      <div class="task-card-body">
+        <div class="task-card-content">
+          <span class="task-card-date">${task.date}</span>
+          <div class="task-card-meta">
+            <span class="task-card-badge">${categoryName}</span>
+            <span class="task-card-badge">${memberName}</span>
+          </div>
+          <div class="task-card-desc">${task.description}</div>
         </div>
-      </div>
-      <div class="task-card-desc">${task.description}</div>
-      <div class="task-card-meta">
-        <span class="task-card-badge">${categoryName}</span>
-        <span class="task-card-badge">${memberName}</span>
+        <span class="task-card-time">${formatMinutes(task.time_spent)}</span>
+        <button class="btn-delete-task" data-id="${task.id}" title="Delete">✕</button>
       </div>
     `;
     tasksList.appendChild(card);
