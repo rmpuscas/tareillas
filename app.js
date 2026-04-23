@@ -490,6 +490,7 @@ function renderStats(data) {
     card.innerHTML = `
       <span class="stats-summary-name">${member.name}</span>
       <span class="stats-summary-time">${formatMinutes(member.total_time_spent)}</span>
+      <span class="stats-summary-tasks">${member.total_tasks} tarea${member.total_tasks !== 1 ? 's' : ''}</span>
     `;
     membersGrid.appendChild(card);
   }
