@@ -19,6 +19,7 @@ const pageInfo = document.getElementById("page-info");
 
 const addTaskBtn = document.getElementById("add-task-btn");
 const modalOverlay = document.getElementById("modal-overlay");
+const modalTitle = document.getElementById("modal-title");
 const modalCancelBtn = document.getElementById("modal-cancel-btn");
 const taskForm = document.getElementById("task-form");
 const taskFormError = document.getElementById("task-form-error");
@@ -55,6 +56,7 @@ let categoriesCache = null;
 let currentPage = "tasks";
 let tasksCurrentPage = 1;
 let tasksTotalPages = 1;
+let editingTaskId = null;
 
 // Bar colors for categories
 const BAR_COLORS = ["#4361ee", "#2ec4b6", "#ff6b6b", "#feca57", "#7b61ff", "#ff9f43", "#54a0ff", "#5f27cd"];
@@ -140,7 +142,10 @@ function renderTasks(tasks, members, categories) {
           <div class="task-card-desc">${task.description}</div>
         </div>
         <span class="task-card-time">${formatMinutes(task.time_spent)}</span>
-        <button class="btn-delete-task" data-id="${task.id}" title="Delete">✕</button>
+        <div class="task-card-actions">
+          <button class="btn-edit-task" data-id="${task.id}" data-member="${task.member_id}" data-category="${task.category_id}" data-date="${task.date}" data-time="${task.time_spent}" data-desc="${(task.description || '').replace(/"/g, '&quot;')}" title="Editar">✎</button>
+          <button class="btn-delete-task" data-id="${task.id}" title="Eliminar">✕</button>
+        </div>
       </div>
     `;
     tasksList.appendChild(card);
@@ -156,6 +161,19 @@ function renderTasks(tasks, members, categories) {
         tasksError.textContent = err.message;
         tasksError.classList.remove("hidden");
       }
+    });
+  });
+
+  tasksList.querySelectorAll(".btn-edit-task").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      openModal({
+        id: btn.dataset.id,
+        member_id: btn.dataset.member,
+        category_id: btn.dataset.category,
+        date: btn.dataset.date,
+        time_spent: btn.dataset.time,
+        description: btn.dataset.desc,
+      });
     });
   });
 
@@ -229,16 +247,27 @@ function populateSelect(select, items, labelKey) {
   }
 }
 
-async function openModal() {
+async function openModal(task = null) {
   taskForm.reset();
   taskFormError.classList.add("hidden");
-  taskDate.value = new Date().toISOString().slice(0, 10);
+  editingTaskId = task ? task.id : null;
+  modalTitle.textContent = task ? "Editar tarea" : "Nueva tarea";
   modalOverlay.classList.remove("hidden");
 
   try {
     const [members, categories] = await Promise.all([fetchMembers(), fetchCategories()]);
     populateSelect(taskMember, members, "name");
     populateSelect(taskCategory, categories, "name");
+
+    if (task) {
+      taskMember.value = task.member_id;
+      taskCategory.value = task.category_id;
+      taskDate.value = task.date;
+      taskTime.value = task.time_spent;
+      taskDesc.value = task.description || "";
+    } else {
+      taskDate.value = new Date().toISOString().slice(0, 10);
+    }
   } catch (err) {
     taskFormError.textContent = err.message;
     taskFormError.classList.remove("hidden");
@@ -277,6 +306,24 @@ async function deleteTask(id) {
     const data = await res.json().catch(() => null);
     throw new Error(data?.message || data?.error || "Failed to delete task");
   }
+}
+
+async function updateTask(id, payload) {
+  const res = await fetch(`${API_BASE}/tasks/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(data?.message || data?.error || "Failed to update task");
+  }
+
+  return res.json();
 }
 
 // ---- Categories CRUD ----
@@ -636,16 +683,22 @@ taskForm.addEventListener("submit", async (e) => {
   btn.disabled = true;
   taskFormError.classList.add("hidden");
 
+  const payload = {
+    member_id: Number(taskMember.value),
+    category_id: Number(taskCategory.value),
+    date: taskDate.value,
+    time_spent: Number(taskTime.value),
+    description: taskDesc.value.trim(),
+  };
+
   try {
-    await createTask({
-      member_id: Number(taskMember.value),
-      category_id: Number(taskCategory.value),
-      date: taskDate.value,
-      time_spent: Number(taskTime.value),
-      description: taskDesc.value.trim(),
-    });
+    if (editingTaskId) {
+      await updateTask(editingTaskId, payload);
+    } else {
+      await createTask(payload);
+    }
     closeModal();
-    loadTasks();
+    loadTasks(tasksCurrentPage);
   } catch (err) {
     taskFormError.textContent = err.message;
     taskFormError.classList.remove("hidden");
